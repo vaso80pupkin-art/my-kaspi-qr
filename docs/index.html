@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f6f7">
+  <meta name="description" content="Персональная страница для быстрого перевода через Kaspi.kz.">
+  <title>Перевод — личная страница</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <style>
+    :root {
+      color-scheme: light;
+      --red: #f14635;
+      --red-deep: #df3828;
+      --ink: #24252a;
+      --muted: #777982;
+      --line: #ededf0;
+      --paper: #ffffff;
+      --canvas: #f6f6f7;
+      --soft-red: #fff1ef;
+      --green: #198754;
+      --shadow: 0 24px 70px rgba(31, 32, 38, .09), 0 3px 12px rgba(31, 32, 38, .04);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      min-height: 100svh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 50% -14%, rgba(241, 70, 53, .10), transparent 45%),
+        var(--canvas);
+    }
+    button { font: inherit; }
+    .page {
+      width: min(100%, 420px);
+      min-height: 100vh;
+      min-height: 100svh;
+      margin: 0 auto;
+      padding: max(22px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 40px;
+      margin-bottom: 35px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: var(--red);
+      box-shadow: 0 5px 12px rgba(241, 70, 53, .22);
+    }
+    .brand-mark svg { width: 19px; height: 19px; }
+    .brand-name { font-size: 14px; font-weight: 750; letter-spacing: -.035em; }
+    .brand-caption { margin-top: 2px; color: var(--muted); font-size: 10px; font-weight: 600; letter-spacing: .11em; text-transform: uppercase; }
+    .secure-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #6f727a;
+      font-size: 11px;
+      font-weight: 650;
+    }
+    .secure-label svg { width: 14px; height: 14px; color: #777982; }
+
+    .intro { margin: 0 0 21px; }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 370px;
+      margin: 0;
+      font-size: clamp(27px, 8vw, 34px);
+      line-height: 1.1;
+      letter-spacing: -.055em;
+      font-weight: 780;
+    }
+    .intro-copy { margin: 9px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+
+    .recipient-card {
+      position: relative;
+      overflow: hidden;
+      padding: 23px 20px 19px;
+      border: 1px solid rgba(235, 235, 239, .9);
+      border-radius: 25px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+    .recipient-card::before {
+      position: absolute;
+      top: -85px;
+      right: -54px;
+      width: 165px;
+      height: 165px;
+      border: 1px solid rgba(241, 70, 53, .09);
+      border-radius: 50%;
+      content: "";
+      pointer-events: none;
+    }
+    .recipient-card::after {
+      position: absolute;
+      top: -57px;
+      right: -27px;
+      width: 110px;
+      height: 110px;
+      border: 1px solid rgba(241, 70, 53, .07);
+      border-radius: 50%;
+      content: "";
+      pointer-events: none;
+    }
+    .recipient-head { position: relative; display: flex; align-items: center; gap: 14px; }
+    .avatar {
+      flex: 0 0 auto;
+      width: 60px;
+      height: 60px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      color: #a13b32;
+      background: linear-gradient(145deg, #ffe3df, #fff4f1 75%);
+      box-shadow: 0 0 0 1px rgba(241, 70, 53, .12), 0 5px 14px rgba(38, 32, 31, .08);
+      font-size: 17px;
+      font-weight: 760;
+      letter-spacing: -.04em;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .recipient-meta { min-width: 0; }
+    .recipient-label { margin-bottom: 4px; color: var(--muted); font-size: 12px; font-weight: 550; }
+    .recipient-name { overflow: hidden; margin: 0; font-size: 20px; font-weight: 760; letter-spacing: -.04em; text-overflow: ellipsis; white-space: nowrap; }
+    .contact-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 22px;
+      padding: 15px 0 18px;
+      border-top: 1px solid var(--line);
+    }
+    .contact-label { margin-bottom: 5px; color: var(--muted); font-size: 12px; }
+    .phone { font-size: 18px; font-weight: 720; letter-spacing: -.035em; white-space: nowrap; }
+    .copy-button {
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #eeeef0;
+      border-radius: 14px;
+      color: #555861;
+      background: #fff;
+      cursor: pointer;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease;
+      box-shadow: 0 2px 0 rgba(27, 28, 33, .04);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .copy-button svg { width: 18px; height: 18px; }
+    .copy-button:hover { border-color: #ffd0ca; color: var(--red); background: #fff9f8; transform: translateY(-1px); }
+    .copy-button:active { transform: translateY(2px) scale(.96); box-shadow: 0 0 0 rgba(27, 28, 33, 0); }
+    .copy-button.is-copied { border-color: #cce8d8; color: var(--green); background: #f1faf5; }
+    .copy-button:focus-visible, .primary-button:focus-visible, .qr-button:focus-visible { outline: 3px solid rgba(241,70,53,.30); outline-offset: 3px; }
+
+    .primary-button {
+      position: relative;
+      width: 100%;
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 11px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 17px;
+      color: #fff;
+      background: linear-gradient(180deg, #f34d3c, #e83f2f);
+      box-shadow: 0 6px 0 #c83225, 0 11px 22px rgba(230, 61, 45, .20);
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 730;
+      letter-spacing: -.02em;
+      transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .primary-button svg { width: 19px; height: 19px; }
+    .primary-button:hover { filter: brightness(1.035); transform: translateY(-1px); box-shadow: 0 7px 0 #c83225, 0 14px 26px rgba(230, 61, 45, .23); }
+    .primary-button:active { transform: translateY(5px); box-shadow: 0 1px 0 #c83225, 0 4px 10px rgba(230, 61, 45, .18); }
+    .hint {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      margin: 17px 2px 0;
+      color: #777982;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .hint svg { flex: 0 0 auto; width: 16px; height: 16px; margin-top: 1px; color: #a0a2a8; }
+    .payment-note {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 17px;
+      padding: 12px 13px;
+      border-radius: 13px;
+      color: #646770;
+      background: #f8f8f9;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .payment-note svg { flex: 0 0 auto; width: 15px; height: 15px; color: #92949a; }
+
+    .qr-details {
+      margin-top: 17px;
+      overflow: hidden;
+      border: 1px solid #ececef;
+      border-radius: 18px;
+      background: rgba(255,255,255,.78);
+      transition: border-color .2s ease;
+    }
+    .qr-details[open] { border-color: #f4c9c4; }
+    .qr-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 62px;
+      padding: 12px 15px;
+      cursor: pointer;
+      list-style: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .qr-summary::-webkit-details-marker { display: none; }
+    .qr-heading { display: flex; align-items: center; gap: 11px; }
+    .qr-icon {
+      width: 35px;
+      height: 35px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      color: var(--red);
+      background: var(--soft-red);
+    }
+    .qr-icon svg { width: 18px; height: 18px; }
+    .qr-title { margin: 0; font-size: 13px; font-weight: 720; letter-spacing: -.015em; }
+    .qr-subtitle { margin: 3px 0 0; color: var(--muted); font-size: 10px; }
+    .chevron { flex: 0 0 auto; width: 16px; height: 16px; color: #8d9098; transition: transform .2s ease; }
+    .qr-details[open] .chevron { transform: rotate(180deg); }
+    .qr-body { padding: 0 15px 16px; animation: reveal .2s ease both; }
+    @keyframes reveal { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    .qr-description { margin: 0 0 13px; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .qr-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+    .qr-button {
+      min-height: 41px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 13px;
+      border: 1px solid #e9e9ed;
+      border-radius: 12px;
+      color: #45474f;
+      background: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 680;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease, color .15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .qr-button svg { width: 15px; height: 15px; }
+    .qr-button:hover { border-color: #f5c9c4; color: var(--red); background: #fff9f8; }
+    .qr-button:active { transform: translateY(2px) scale(.98); }
+    .qr-button.primary-small { border-color: #f14635; color: #fff; background: var(--red); }
+    .qr-button.primary-small:hover { border-color: var(--red-deep); background: var(--red-deep); }
+    .qr-output { display: none; margin: 15px auto 0; padding: 10px; width: fit-content; border: 1px solid #eeeeef; border-radius: 16px; background: white; }
+    .qr-output.visible { display: block; animation: reveal .22s ease both; }
+    #qrCanvas { display: block; width: min(58vw, 220px); height: auto; image-rendering: pixelated; }
+    .qr-url { max-width: 270px; margin: 8px auto 0; overflow: hidden; color: #8a8c94; font-size: 10px; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+    .footer { margin-top: auto; padding-top: 21px; color: #a1a3a9; font-size: 10px; line-height: 1.45; text-align: center; }
+    .footer span { color: #777982; font-weight: 650; }
+    .toast {
+      position: fixed;
+      z-index: 10;
+      left: 50%;
+      bottom: max(22px, env(safe-area-inset-bottom));
+      width: max-content;
+      max-width: calc(100vw - 36px);
+      padding: 12px 16px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 14px;
+      color: #fff;
+      background: rgba(35,36,41,.95);
+      box-shadow: 0 9px 28px rgba(25,25,30,.22);
+      font-size: 13px;
+      font-weight: 620;
+      line-height: 1.35;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 13px) scale(.98);
+      transition: opacity .2s ease, transform .2s ease;
+      backdrop-filter: blur(12px);
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    @media (min-width: 600px) {
+      body { display: grid; place-items: center; padding: 28px 0; }
+      .page { min-height: min(850px, calc(100svh - 56px)); padding-top: 22px; padding-bottom: 20px; }
+      .topbar { margin-bottom: 30px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar" aria-label="Личная страница для перевода">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div>
+          <div class="brand-name">Личный перевод</div>
+          <div class="brand-caption">Kaspi · быстро и просто</div>
+        </div>
+      </div>
+      <div class="secure-label" aria-label="Перевод открывается в приложении Kaspi">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.5 19 6v5.3c0 4.5-3 7.7-7 9.2-4-1.5-7-4.7-7-9.2V6l7-2.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Удобный перевод
+      </div>
+    </header>
+
+    <section class="intro" aria-labelledby="pageTitle">
+      <p class="eyebrow">Личная страница</p>
+      <h1 id="pageTitle">Перевод за пару секунд</h1>
+      <p class="intro-copy">Выберите удобный способ отправить перевод.</p>
+    </section>
+
+    <section class="recipient-card" aria-label="Карточка получателя">
+      <div class="recipient-head">
+        <div class="avatar" id="avatar" aria-hidden="true">АК</div>
+        <div class="recipient-meta">
+          <div class="recipient-label">Получатель перевода</div>
+          <h2 class="recipient-name" id="recipientName">Александр К.</h2>
+        </div>
+      </div>
+
+      <div class="contact-row">
+        <div>
+          <div class="contact-label">Номер телефона</div>
+          <div class="phone" id="phoneNumber">+7 (7XX) XXX-XX-XX</div>
+        </div>
+        <button class="copy-button" id="copyButton" type="button" aria-label="Скопировать номер" title="Скопировать номер">
+          <svg class="copy-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="8" y="8" width="11" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M16 8V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <button class="primary-button" id="payButton" type="button">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Перевести через Kaspi
+      </button>
+
+      <p class="hint">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v5m0-8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>Номер автоматически скопируется при нажатии. Если окно перевода не открылось само — просто вставьте номер в приложении Kaspi.</span>
+      </p>
+    </section>
+
+    <div class="payment-note">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.5 19 6v5.3c0 4.5-3 7.7-7 9.2-4-1.5-7-4.7-7-9.2V6l7-2.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Данные карты не вводятся на этой странице — перевод выполняется в Kaspi.
+    </div>
+
+    <details class="qr-details" id="qrDetails">
+      <summary class="qr-summary" id="qrSummary">
+        <div class="qr-heading">
+          <span class="qr-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v6h-2zM14 18h2v2h-2z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+          <span><span class="qr-title">QR-код этой страницы</span><span class="qr-subtitle">Сохраните и отправьте кому удобно</span></span>
+        </div>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </summary>
+      <div class="qr-body">
+        <p class="qr-description">QR-код ведёт на адрес этой страницы. Сгенерируйте его после публикации, чтобы поделиться постоянной ссылкой.</p>
+        <div class="qr-actions">
+          <button class="qr-button primary-small" id="generateQrButton" type="button">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 14h2v6h-2zM14 18h2v2h-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            Создать QR-код
+          </button>
+          <button class="qr-button" id="downloadQrButton" type="button" hidden>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 16v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Скачать PNG
+          </button>
+        </div>
+        <div class="qr-output" id="qrOutput">
+          <canvas id="qrCanvas" aria-label="QR-код ссылки на эту страницу"></canvas>
+          <p class="qr-url" id="qrUrl"></p>
+        </div>
+      </div>
+    </details>
+
+    <footer class="footer"><span>Kaspi.kz</span> — перевод откроется в официальном приложении или на сайте.</footer>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="./qrcode.min.js"></script>
+  <script>
+    // Быстро измените эти три значения: имя, телефон и ссылку на фото.
+    // Телефон указывайте в удобном формате: +7 (7XX) XXX-XX-XX.
+    // Пустая avatarUrl оставляет инициалы; ссылка должна вести на изображение.
+    const RECIPIENT = {
+      name: "Александр К.",
+      phone: "+7 (7XX) XXX-XX-XX", // Замените на номер получателя перед публикацией.
+      avatarUrl: "" // Например: "https://example.com/avatar.jpg"
+    };
+
+    const ICON_COPY = '<svg class="copy-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="8" y="8" width="11" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M16 8V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    const ICON_CHECK = '<svg class="copy-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12.5 4.3 4.3L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const phoneNumber = document.getElementById("phoneNumber");
+    const recipientName = document.getElementById("recipientName");
+    const avatar = document.getElementById("avatar");
+    const copyButton = document.getElementById("copyButton");
+    const toast = document.getElementById("toast");
+    const qrCanvas = document.getElementById("qrCanvas");
+    let toastTimer;
+    let copyResetTimer;
+
+    recipientName.textContent = RECIPIENT.name;
+    phoneNumber.textContent = RECIPIENT.phone;
+    document.title = "Перевод для " + RECIPIENT.name;
+    const initials = RECIPIENT.name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join("").toLocaleUpperCase("ru-RU");
+    avatar.textContent = initials || "?";
+    if (RECIPIENT.avatarUrl.trim()) {
+      const photo = document.createElement("img");
+      photo.src = RECIPIENT.avatarUrl.trim();
+      photo.alt = "Фото: " + RECIPIENT.name;
+      photo.onload = () => { avatar.textContent = ""; avatar.appendChild(photo); };
+    }
+
+    function vibrate() {
+      if ("vibrate" in navigator) {
+        try { navigator.vibrate(50); } catch (_) { /* Вибрация может быть запрещена браузером. */ }
+      }
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch (_) { /* Продолжить запасным способом для браузеров с ограничениями. */ }
+      }
+      const helper = document.createElement("textarea");
+      helper.value = text;
+      helper.setAttribute("readonly", "");
+      helper.style.position = "fixed";
+      helper.style.opacity = "0";
+      helper.style.pointerEvents = "none";
+      document.body.appendChild(helper);
+      helper.select();
+      let copied = false;
+      try { copied = document.execCommand("copy"); } catch (_) { copied = false; }
+      helper.remove();
+      return copied;
+    }
+
+    function markCopied() {
+      copyButton.classList.add("is-copied");
+      copyButton.innerHTML = ICON_CHECK;
+      copyButton.setAttribute("aria-label", "Номер скопирован");
+      copyButton.title = "Номер скопирован";
+      clearTimeout(copyResetTimer);
+      copyResetTimer = setTimeout(() => {
+        copyButton.classList.remove("is-copied");
+        copyButton.innerHTML = ICON_COPY;
+        copyButton.setAttribute("aria-label", "Скопировать номер");
+        copyButton.title = "Скопировать номер";
+      }, 2100);
+    }
+
+    async function copyPhone(showSuccessToast = true) {
+      const copied = await copyText(RECIPIENT.phone);
+      if (copied) {
+        markCopied();
+        if (showSuccessToast) showToast("Номер скопирован! Вставьте его в Kaspi");
+      } else {
+        showToast("Не удалось скопировать автоматически — выделите номер вручную");
+      }
+      return copied;
+    }
+
+    function openKaspi() {
+      const android = /Android/i.test(navigator.userAgent);
+      if (android) {
+        const fallback = encodeURIComponent("https://kaspi.kz");
+        const intentUrl = "intent://kaspi.kz/#Intent;scheme=https;package=kz.kkb.client;S.browser_fallback_url=" + fallback + ";end";
+        window.location.href = intentUrl;
+        // Резерв для браузеров, которые не обрабатывают Android Intent.
+        setTimeout(() => {
+          if (!document.hidden) window.location.href = "https://kaspi.kz";
+        }, 1300);
+        return;
+      }
+      // На iPhone universal link может передать переход установленному приложению;
+      // на компьютере или без приложения откроется веб-версия Kaspi.
+      window.location.href = "https://kaspi.kz";
+    }
+
+    document.getElementById("copyButton").addEventListener("click", async () => {
+      vibrate();
+      await copyPhone();
+    });
+
+    document.getElementById("payButton").addEventListener("click", async () => {
+      vibrate();
+      // Сначала инициируем копирование, затем сразу передаём управление Kaspi.
+      const copyPromise = copyPhone(false);
+      showToast("Номер скопирован! Вставьте его в Kaspi");
+      openKaspi();
+      await copyPromise;
+    });
+
+    const qrDetails = document.getElementById("qrDetails");
+    document.getElementById("qrSummary").addEventListener("click", vibrate);
+    document.getElementById("generateQrButton").addEventListener("click", () => {
+      vibrate();
+      if (typeof qrcode !== "function") {
+        showToast("Генератор QR-кода не загрузился. Обновите страницу и попробуйте снова.");
+        return;
+      }
+      const pageUrl = window.location.href.split("#")[0];
+      try {
+        const code = qrcode(0, "M");
+        code.addData(pageUrl, "Byte");
+        code.make();
+        const moduleCount = code.getModuleCount();
+        const quietZone = 4;
+        const cell = 8;
+        const size = (moduleCount + quietZone * 2) * cell;
+        qrCanvas.width = size;
+        qrCanvas.height = size;
+        const context = qrCanvas.getContext("2d");
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, size, size);
+        context.fillStyle = "#24252a";
+        for (let row = 0; row < moduleCount; row += 1) {
+          for (let column = 0; column < moduleCount; column += 1) {
+            if (code.isDark(row, column)) {
+              context.fillRect((column + quietZone) * cell, (row + quietZone) * cell, cell, cell);
+            }
+          }
+        }
+        document.getElementById("qrOutput").classList.add("visible");
+        document.getElementById("qrUrl").textContent = pageUrl;
+        document.getElementById("downloadQrButton").hidden = false;
+        showToast("QR-код страницы готов");
+      } catch (_) {
+        showToast("Не получилось создать QR-код. Проверьте адрес страницы.");
+      }
+    });
+
+    document.getElementById("downloadQrButton").addEventListener("click", () => {
+      vibrate();
+      if (!qrCanvas.width) return;
+      const download = document.createElement("a");
+      download.download = "kaspi-qr-page.png";
+      download.href = qrCanvas.toDataURL("image/png");
+      download.click();
+      showToast("QR-код сохранён как PNG");
+    });
+  </script>
+</body>
+</html>
