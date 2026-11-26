@@ -159,6 +159,28 @@
       padding: 15px 0 18px;
       border-top: 1px solid var(--line);
     }
+    .transfer-fields { display: grid; gap: 8px; margin: 0 0 17px; }
+    .field-label { margin-top: 4px; color: #555861; font-size: 12px; font-weight: 650; }
+    .field-row { display: flex; align-items: stretch; gap: 8px; }
+    .transfer-input {
+      width: 100%;
+      min-width: 0;
+      min-height: 45px;
+      padding: 0 13px;
+      border: 1px solid #e9e9ed;
+      border-radius: 13px;
+      outline: none;
+      color: var(--ink);
+      background: #fff;
+      font: inherit;
+      font-size: 15px;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .transfer-input:focus { border-color: #f3a49b; box-shadow: 0 0 0 3px rgba(241,70,53,.09); }
+    .transfer-input::placeholder { color: #b2b4ba; }
+    .purpose-input { min-height: 68px; padding-top: 11px; padding-bottom: 10px; resize: vertical; }
+    .field-note { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .field-copy { width: 45px; height: 45px; }
     .contact-label { margin-bottom: 5px; color: var(--muted); font-size: 12px; }
     .phone { font-size: 18px; font-weight: 720; letter-spacing: -.035em; white-space: nowrap; }
     .copy-button {
@@ -375,6 +397,26 @@
         </button>
       </div>
 
+      <div class="transfer-fields" aria-label="Параметры перевода">
+        <label class="field-label" for="amountInput">Сумма перевода</label>
+        <div class="field-row">
+          <input class="transfer-input" id="amountInput" type="number" inputmode="decimal" min="1" step="1" placeholder="Например, 5000" aria-describedby="amountNote">
+          <button class="copy-button field-copy" id="copyAmountButton" type="button" aria-label="Скопировать сумму" title="Скопировать сумму">
+            <svg class="copy-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="8" y="8" width="11" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M16 8V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <p class="field-note" id="amountNote">Сумму можно скопировать и вставить в Kaspi. Валюта — тенге.</p>
+
+        <label class="field-label" for="purposeInput">Назначение платежа</label>
+        <div class="field-row">
+          <textarea class="transfer-input purpose-input" id="purposeInput" rows="2" maxlength="120" placeholder="Например, за ужин" aria-describedby="purposeNote"></textarea>
+          <button class="copy-button field-copy" id="copyPurposeButton" type="button" aria-label="Скопировать назначение" title="Скопировать назначение">
+            <svg class="copy-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="8" y="8" width="11" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M16 8V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <p class="field-note" id="purposeNote">Назначение тоже можно скопировать отдельно и вставить вручную.</p>
+      </div>
+
       <button class="primary-button" id="payButton" type="button">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Перевести через Kaspi
@@ -382,7 +424,7 @@
 
       <p class="hint">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v5m0-8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <span>Номер автоматически скопируется при нажатии. Если окно перевода не открылось само — просто вставьте номер в приложении Kaspi.</span>
+        <span>Номер автоматически скопируется при нажатии. Сумму и назначение можно скопировать отдельно и вставить в Kaspi вручную.</span>
       </p>
     </section>
 
@@ -442,7 +484,7 @@
     const toast = document.getElementById("toast");
     const qrCanvas = document.getElementById("qrCanvas");
     let toastTimer;
-    let copyResetTimer;
+    const copyResetTimers = new WeakMap();
 
     recipientName.textContent = RECIPIENT.name;
     phoneNumber.textContent = RECIPIENT.phone;
@@ -490,29 +532,53 @@
       return copied;
     }
 
-    function markCopied() {
-      copyButton.classList.add("is-copied");
-      copyButton.innerHTML = ICON_CHECK;
-      copyButton.setAttribute("aria-label", "Номер скопирован");
-      copyButton.title = "Номер скопирован";
-      clearTimeout(copyResetTimer);
-      copyResetTimer = setTimeout(() => {
-        copyButton.classList.remove("is-copied");
-        copyButton.innerHTML = ICON_COPY;
-        copyButton.setAttribute("aria-label", "Скопировать номер");
-        copyButton.title = "Скопировать номер";
-      }, 2100);
+    function markCopied(button, defaultLabel, copiedLabel) {
+      button.classList.add("is-copied");
+      button.innerHTML = ICON_CHECK;
+      button.setAttribute("aria-label", copiedLabel);
+      button.title = copiedLabel;
+      clearTimeout(copyResetTimers.get(button));
+      copyResetTimers.set(button, setTimeout(() => {
+        button.classList.remove("is-copied");
+        button.innerHTML = ICON_COPY;
+        button.setAttribute("aria-label", defaultLabel);
+        button.title = defaultLabel;
+      }, 2100));
     }
 
     async function copyPhone(showSuccessToast = true) {
       const copied = await copyText(RECIPIENT.phone);
       if (copied) {
-        markCopied();
+        markCopied(copyButton, "Скопировать номер", "Номер скопирован");
         if (showSuccessToast) showToast("Номер скопирован! Вставьте его в Kaspi");
       } else {
         showToast("Не удалось скопировать автоматически — выделите номер вручную");
       }
       return copied;
+    }
+
+    async function copyTransferField(inputId, buttonId, subject, emptyMessage, copiedMessage) {
+      vibrate();
+      const input = document.getElementById(inputId);
+      const value = input.value.trim();
+      if (!value) {
+        showToast(emptyMessage);
+        input.focus();
+        return;
+      }
+      if (inputId === "amountInput" && (!Number.isFinite(Number(value)) || Number(value) <= 0)) {
+        showToast("Укажите сумму больше нуля");
+        input.focus();
+        return;
+      }
+      const button = document.getElementById(buttonId);
+      const copied = await copyText(value);
+      if (copied) {
+        markCopied(button, "Скопировать " + subject, copiedMessage);
+        showToast(copiedMessage);
+      } else {
+        showToast("Не удалось скопировать. Выделите текст и скопируйте вручную.");
+      }
     }
 
     function openKaspi() {
@@ -535,6 +601,14 @@
     document.getElementById("copyButton").addEventListener("click", async () => {
       vibrate();
       await copyPhone();
+    });
+
+    document.getElementById("copyAmountButton").addEventListener("click", () => {
+      copyTransferField("amountInput", "copyAmountButton", "сумму", "Сначала укажите сумму", "Сумма скопирована");
+    });
+
+    document.getElementById("copyPurposeButton").addEventListener("click", () => {
+      copyTransferField("purposeInput", "copyPurposeButton", "назначение", "Сначала укажите назначение", "Назначение скопировано");
     });
 
     document.getElementById("payButton").addEventListener("click", async () => {
