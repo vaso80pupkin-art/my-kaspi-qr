@@ -159,6 +159,42 @@
       padding: 15px 0 18px;
       border-top: 1px solid var(--line);
     }
+    .phone-edit-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: -10px 0 14px;
+      padding: 5px 0;
+      border: 0;
+      color: var(--red);
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 680;
+    }
+    .phone-edit-trigger svg { width: 14px; height: 14px; }
+    .phone-editor {
+      margin: 0 0 17px;
+      padding: 13px;
+      border: 1px solid #f1d9d6;
+      border-radius: 15px;
+      background: #fffaf9;
+    }
+    .phone-editor[hidden] { display: none; }
+    .phone-editor-label { display: block; margin-bottom: 7px; color: #555861; font-size: 12px; font-weight: 680; }
+    .phone-editor-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .phone-editor-actions .qr-button { flex: 1; }
+    .phone-reset-button {
+      margin: 8px 0 7px;
+      padding: 3px 0;
+      border: 0;
+      color: #777982;
+      background: transparent;
+      cursor: pointer;
+      font-size: 11px;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
     .transfer-fields { display: grid; gap: 8px; margin: 0 0 17px; }
     .field-label { margin-top: 4px; color: #555861; font-size: 12px; font-weight: 650; }
     .field-row { display: flex; align-items: stretch; gap: 8px; }
@@ -397,6 +433,21 @@
         </button>
       </div>
 
+      <button class="phone-edit-trigger" id="editPhoneButton" type="button" aria-controls="phoneEditor" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14 5 5 5M5 19l4.5-.9L19 8.6a2.1 2.1 0 0 0-3-3L6.5 15.1 5 19Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Изменить номер
+      </button>
+      <div class="phone-editor" id="phoneEditor" hidden>
+        <label class="phone-editor-label" for="phoneInput">Номер телефона</label>
+        <input class="transfer-input" id="phoneInput" type="tel" inputmode="tel" autocomplete="tel" maxlength="24" placeholder="+7 (7XX) XXX-XX-XX">
+        <div class="phone-editor-actions">
+          <button class="qr-button primary-small" id="savePhoneButton" type="button">Сохранить</button>
+          <button class="qr-button" id="cancelPhoneButton" type="button">Отмена</button>
+        </div>
+        <button class="phone-reset-button" id="resetPhoneButton" type="button">Вернуть исходный номер страницы</button>
+        <p class="field-note">Изменение сохраняется только в этом браузере. Страница не получает данные Kaspi: имя получателя подтвердите в приложении.</p>
+      </div>
+
       <div class="transfer-fields" aria-label="Параметры перевода">
         <label class="field-label" for="amountInput">Сумма перевода</label>
         <div class="field-row">
@@ -481,14 +532,34 @@
     const recipientName = document.getElementById("recipientName");
     const avatar = document.getElementById("avatar");
     const copyButton = document.getElementById("copyButton");
+    const phoneInput = document.getElementById("phoneInput");
+    const phoneEditor = document.getElementById("phoneEditor");
+    const editPhoneButton = document.getElementById("editPhoneButton");
     const toast = document.getElementById("toast");
     const qrCanvas = document.getElementById("qrCanvas");
     let toastTimer;
     const copyResetTimers = new WeakMap();
+    const PHONE_STORAGE_KEY = "kaspiQR.recipientPhone";
+    let currentPhone = RECIPIENT.phone;
+
+    function normalizeKzPhone(value) {
+      let digits = value.replace(/\D/g, "");
+      if (digits.length === 11 && digits.startsWith("8")) digits = "7" + digits.slice(1);
+      if (digits.length === 10) digits = "7" + digits;
+      if (digits.length !== 11 || !digits.startsWith("7")) return null;
+      return "+7 (" + digits.slice(1, 4) + ") " + digits.slice(4, 7) + "-" + digits.slice(7, 9) + "-" + digits.slice(9, 11);
+    }
+
+    try {
+      const savedPhone = localStorage.getItem(PHONE_STORAGE_KEY);
+      const normalizedPhone = savedPhone && normalizeKzPhone(savedPhone);
+      if (normalizedPhone) currentPhone = normalizedPhone;
+    } catch (_) { /* Хранилище может быть запрещено в частном режиме браузера. */ }
 
     recipientName.textContent = RECIPIENT.name;
-    phoneNumber.textContent = RECIPIENT.phone;
+    phoneNumber.textContent = currentPhone;
     document.title = "Перевод для " + RECIPIENT.name;
+    phoneInput.value = currentPhone.includes("X") ? "" : currentPhone;
     const initials = RECIPIENT.name.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join("").toLocaleUpperCase("ru-RU");
     avatar.textContent = initials || "?";
     if (RECIPIENT.avatarUrl.trim()) {
@@ -510,6 +581,54 @@
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
     }
+
+    function closePhoneEditor() {
+      phoneEditor.hidden = true;
+      editPhoneButton.setAttribute("aria-expanded", "false");
+    }
+
+    editPhoneButton.addEventListener("click", () => {
+      vibrate();
+      phoneInput.value = currentPhone.includes("X") ? "" : currentPhone;
+      phoneEditor.hidden = false;
+      editPhoneButton.setAttribute("aria-expanded", "true");
+      phoneInput.focus();
+    });
+
+    document.getElementById("cancelPhoneButton").addEventListener("click", () => {
+      vibrate();
+      closePhoneEditor();
+    });
+
+    document.getElementById("savePhoneButton").addEventListener("click", () => {
+      vibrate();
+      const normalizedPhone = normalizeKzPhone(phoneInput.value);
+      if (!normalizedPhone) {
+        showToast("Введите казахстанский номер: +7 и 10 цифр");
+        phoneInput.focus();
+        return;
+      }
+      currentPhone = normalizedPhone;
+      phoneNumber.textContent = currentPhone;
+      phoneInput.value = currentPhone;
+      let saved = false;
+      try {
+        localStorage.setItem(PHONE_STORAGE_KEY, currentPhone);
+        saved = true;
+      } catch (_) { /* Номер всё равно действует до закрытия страницы. */ }
+      closePhoneEditor();
+      showToast(saved ? "Номер обновлён на этом устройстве" : "Номер изменён до закрытия страницы");
+    });
+
+    document.getElementById("resetPhoneButton").addEventListener("click", () => {
+      vibrate();
+      try { localStorage.removeItem(PHONE_STORAGE_KEY); } catch (_) { /* Исходный номер всё равно восстановится на этой странице. */ }
+      currentPhone = RECIPIENT.phone;
+      phoneNumber.textContent = currentPhone;
+      phoneInput.value = currentPhone.includes("X") ? "" : currentPhone;
+      closePhoneEditor();
+      showToast("Исходный номер страницы восстановлен");
+    });
 
     async function copyText(text) {
       if (navigator.clipboard && window.isSecureContext) {
@@ -547,7 +666,7 @@
     }
 
     async function copyPhone(showSuccessToast = true) {
-      const copied = await copyText(RECIPIENT.phone);
+      const copied = await copyText(currentPhone);
       if (copied) {
         markCopied(copyButton, "Скопировать номер", "Номер скопирован");
         if (showSuccessToast) showToast("Номер скопирован! Вставьте его в Kaspi");
